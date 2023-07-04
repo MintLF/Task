@@ -65,21 +65,68 @@ extension Date {
     }
 
     func format(_ style: DateFormatStyle = .all) -> String {
-        switch style {
-        case .time:
-            if self.minute < 10 {
-                return "\(self.hour):0\(self.minute)"
+        func formatTime() -> String {
+            if minute < 10 {
+                return "\(hour):0\(minute)"
             } else {
-                return "\(self.hour):\(self.minute)"
-            }
-        case .date:
-            return "\(self.year)年\(self.month)月\(self.day)日"
-        case .all:
-            if self.minute < 10 {
-                return "\(self.year)年\(self.month)月\(self.day)日 \(self.hour):0\(self.minute)"
-            } else {
-                return "\(self.year)年\(self.month)月\(self.day)日 \(self.hour):\(self.minute)"
+                return "\(hour):\(minute)"
             }
         }
+        
+        func formatDate() -> String {
+            if year == Date.now.year {
+                if isTheSameDay(as: Date.now) {
+                    return "今天"
+                }
+                if isTheSameDay(as: next(day: 1)) {
+                    return "明天"
+                }
+                return "\(month)月\(day)日"
+            }
+            return "\(year)年\(month)月\(day)日"
+        }
+        
+        switch style {
+        case .time:
+            return formatTime()
+        case .date:
+            return formatDate()
+        case .all:
+            return "\(formatDate()) \(formatTime())"
+        }
+    }
+    
+    func next(day: Int) -> Date {
+        return Date(timeIntervalSince1970: Date(year: Date.now.year, month: Date.now.month, day: Date.now.day).timeIntervalSince1970 + Double(day.days()))
+    }
+    
+    func isTheSameDay(as other: Date) -> Bool {
+        if self.year == other.year && self.month == other.month && self.day == other.day {
+            return true
+        }
+        return false
+    }
+    
+    func isInTheNextDay(from: Int, to: Int) -> Bool {
+        if self > next(day: to) {
+            return false
+        }
+        if self < next(day: from) {
+            return false
+        }
+        return true
+    }
+    
+    func isAfter(day: Int) -> Bool {
+        if self >= Date(timeIntervalSince1970: Date(year: Date.now.year, month: Date.now.month, day: Date.now.day).timeIntervalSince1970 + Double(day.days())) {
+            return true
+        }
+        return false
+    }
+}
+
+extension Int {
+    func days() -> Int {
+        return self * 24 * 60 * 60
     }
 }

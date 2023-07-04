@@ -1,55 +1,128 @@
 import SwiftUI
 
 struct TaskListView: View {
+    struct TaskSectionView<Subtitle: View>: View {
+        @ObservedObject private var dataManager: DataManager
+        private var sectionTitle: String
+        private var sort: (Binding<Task>, Binding<Task>) -> Bool
+        private var filter: (Binding<Task>) -> Bool
+        @ViewBuilder private var displaySubtitle: (Task) -> Subtitle
+        
+        init(_ dataManager: DataManager, title: String, filter: @escaping (Binding<Task>) -> Bool, sortBy: @escaping (Binding<Task>, Binding<Task>) -> Bool, @ViewBuilder subtitle: @escaping (Task) -> Subtitle) {
+            self.dataManager = dataManager
+            self.sort = sortBy
+            self.filter = filter
+            self.sectionTitle = title
+            self.displaySubtitle = subtitle
+        }
+        
+        private var list: [Binding<Task>] {
+            return $dataManager.data.filter(filter).sorted(by: sort)
+        }
+        
+        var body: some View {
+            if !list.isEmpty {
+                Section(sectionTitle) {
+                    ForEach(list, id: \.id) { task in
+                        NavigationLink {
+                            TaskDetailView(task, total: dataManager.totalSubtasks, finished: dataManager.finishedSubtasks)
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading) {
+                                    Text(task.wrappedValue.name)
+                                        .font(.headline)
+                                        .lineLimit(1)
+                                    displaySubtitle(task.wrappedValue)
+                                }
+                            } icon: {
+                                ProgressView(value: CGFloat(task.wrappedValue.hasCompleted), total: CGFloat(task.wrappedValue.subtasks.count))
+                                    .progressViewStyle(.circular)
+                                    .padding(.all, 1)
+                            }
+                            .labelStyle(.listItem)
+                        }
+                        .contextMenu {
+                            Button {
+                                dataManager.data.removeAll { element in
+                                    element.id == task.wrappedValue.id
+                                }
+                            } label: {
+                                Text("删除")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     @ObservedObject private var dataManager: DataManager
-    @State private var selection: UUID?
-    @State private var isDeleted: Bool = false
     
     init(_ dataManager: DataManager) {
         self.dataManager = dataManager
     }
     
     var body: some View {
-        List(selection: $selection) {
-            ForEach(0..<dataManager.data.count, id: \.self) { index in
-                NavigationLink {
-                    TaskDetailView($dataManager.data[index], total: dataManager.totalSubtasks, finished: dataManager.finishedSubtasks, isDeleted: isDeleted)
-                } label: {
-                    Label {
-                        VStack(alignment: .leading) {
-                            Text(dataManager.data[index].name)
-                                .font(.headline)
-                                .lineLimit(1)
-                            Text(dataManager.data[index].date.format(.all))
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-                                .lineLimit(2)
-                        }
-                    } icon: {
-                        ProgressView(value: CGFloat(dataManager.data[index].hasCompleted), total: CGFloat(dataManager.data[index].subtasks.count))
-                            .progressViewStyle(.circular)
-                            .padding(.all, 1)
-                    }
-                    .labelStyle(.listItem)
-                }
-                .contextMenu {
-                    Button {
-                        if dataManager.data[index].id == selection {
-                            isDeleted = true
-                        }
-                        dataManager.data.removeAll { element in
-                            element.id == dataManager.data[index].id
-                        }
-                    } label: {
-                        Text("删除")
-                    }
-                }
+        List {
+            TaskSectionView(dataManager, title: "已逾期") { task in
+                return task.wrappedValue.overdue > 0
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text("逾期\(task.overdue)个子任务")
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
-            .onMove { from, toIndex in
-                dataManager.data.move(fromOffsets: from, toOffset: toIndex)
+            TaskSectionView(dataManager, title: "今天") { task in
+                return task.wrappedValue.date.isTheSameDay(as: Date.now) && task.wrappedValue.overdue == 0
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
-            .onChange(of: selection) { _ in
-                isDeleted = false
+            TaskSectionView(dataManager, title: "未来7天") { task in
+                return task.wrappedValue.date.isInTheNextDay(from: 1, to: 8)
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            TaskSectionView(dataManager, title: "未来30天") { task in
+                return task.wrappedValue.date.isInTheNextDay(from: 8, to: 31)
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            TaskSectionView(dataManager, title: "未来半年") { task in
+                return task.wrappedValue.date.isInTheNextDay(from: 31, to: 181)
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            TaskSectionView(dataManager, title: "未来") { task in
+                return task.wrappedValue.date.isAfter(day: 181)
+            } sortBy: { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            } subtitle: { task in
+                Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
         }
         .scrollContentBackground(.hidden)

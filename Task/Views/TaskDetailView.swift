@@ -4,11 +4,13 @@ struct TaskDetailView: View {
     struct SubtaskDetailView: View {
         @State private var isEditingDate: Bool = false
         @Binding private var subtask: Subtask
-        private var index: Int
+        private var count: Int
+        private var delete: () -> Void
         
-        init(_ subtask: Binding<Subtask>, index: Int) {
+        init(_ subtask: Binding<Subtask>, count: Int, delete: @escaping () -> Void) {
             self._subtask = subtask
-            self.index = index
+            self.count = count
+            self.delete = delete
         }
         
         var body: some View {
@@ -27,14 +29,21 @@ struct TaskDetailView: View {
                         } label: {
                             Text(subtask.date.format(.all))
                                 .font(.body)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
                         .popover(isPresented: $isEditingDate) { 
                             CalendarWidget($subtask.date)
                                 .padding()
                         }
-                        
+                        Button {
+                            delete()
+                        } label: {
+                            Image(systemName: "trash")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(count == 1)
                     }
                     TextEditor(text: $subtask.description)
                         .scrollDisabled(true)
@@ -49,57 +58,53 @@ struct TaskDetailView: View {
     }
     
     @Binding private var task: Task
-    private var isDeleted: Bool
     private var totalSteps: Int
     private var finishedSteps: Int
     
-    init(_ task: Binding<Task>, total: Int, finished: Int, isDeleted: Bool) {
+    init(_ task: Binding<Task>, total: Int, finished: Int) {
         self._task = task
         self.totalSteps = total
         self.finishedSteps = finished
-        self.isDeleted = isDeleted
     }
     
     var body: some View {
-        if isDeleted {
-            WelcomeView()
-                .navigationTitle("待办事项")
-                .navigationSubtitle("已完成 \(finishedSteps)/\(totalSteps) 个子任务")
-        } else {
-            ScrollView(.vertical) {
-                VStack {
-                    GroupBox {
-                        VStack {
-                            ForEach(0..<task.subtasks.count, id: \.self) { index in
-                                SubtaskDetailView($task.subtasks[index], index: index)
-                                if index != task.subtasks.count - 1 {
-                                    Divider()
+        ScrollView(.vertical) {
+            VStack {
+                GroupBox {
+                    VStack {
+                        ForEach(0..<task.subtasks.count, id: \.self) { index in
+                            SubtaskDetailView($task.subtasks[index], count: task.subtasks.count) {
+                                task.subtasks.removeAll { other in
+                                    task.subtasks[index].id == other.id
                                 }
                             }
+                            if index != task.subtasks.count - 1 {
+                                Divider()
+                            }
                         }
-                        .padding(.all, 5)
-                    } label: {
-                        TextEditor(text: $task.name)
-                            .labelsHidden()
-                            .textFieldStyle(.plain)
-                            .font(.headline)
                     }
+                    .padding(.all, 5)
+                } label: {
+                    TextEditor(text: $task.name)
+                        .labelsHidden()
+                        .textFieldStyle(.plain)
+                        .font(.headline)
                 }
-                .padding()
             }
-            .background(Color(NSColor.controlBackgroundColor))
-            .navigationTitle("待办事项")
-            .navigationSubtitle("已完成 \(finishedSteps)/\(totalSteps) 个子任务")
-            .toolbar {
-                ToolbarItem {
-                    Spacer(minLength: 0)
-                }
-                ToolbarItem {
-                    Button {
-                        task.subtasks.append(Subtask("子任务", "这是一个子任务。"))
-                    } label: {
-                        Label("添加子任务", systemImage: "plus")
-                    }
+            .padding()
+        }
+        .background(Color(NSColor.controlBackgroundColor))
+        .navigationTitle("待办事项")
+        .navigationSubtitle("已完成 \(finishedSteps)/\(totalSteps) 个子任务")
+        .toolbar {
+            ToolbarItem {
+                Spacer(minLength: 0)
+            }
+            ToolbarItem {
+                Button {
+                    task.subtasks.append(Subtask("子任务", "这是一个子任务。"))
+                } label: {
+                    Label("添加子任务", systemImage: "plus")
                 }
             }
         }
@@ -108,6 +113,6 @@ struct TaskDetailView: View {
 
 struct TaskDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        TaskDetailView(.constant(Task("示例项目", subtasks: [Subtask("子任务", "这是一个子任务。")])), total: 10, finished: 5, isDeleted: false)
+        TaskDetailView(.constant(Task("示例项目", subtasks: [Subtask("子任务", "这是一个子任务。")])), total: 10, finished: 5)
     }
 }
