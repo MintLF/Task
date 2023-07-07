@@ -24,48 +24,46 @@ struct TaskListView: View {
             if !list.isEmpty {
                 Section(sectionTitle) {
                     ForEach(list, id: \.id) { task in
-                        NavigationLink {
-                            TaskDetailView(task, total: dataManager.totalSubtasks, finished: dataManager.finishedSubtasks)
-                        } label: {
-                            Label {
-                                VStack(alignment: .leading) {
-                                    Text(task.wrappedValue.name)
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                    displaySubtitle(task.wrappedValue)
+                        Label {
+                            VStack(alignment: .leading) {
+                                TextField("", text: task.name)
+                                    .labelsHidden()
+                                    .textFieldStyle(.plain)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                displaySubtitle(task.wrappedValue)
+                            }
+                        } icon: {
+                            ZStack {
+                                if task.wrappedValue.isCompleted {
+                                    Image(systemName: "checkmark")
+                                        .fontWeight(.semibold)
                                 }
-                            } icon: {
                                 ProgressView(value: CGFloat(task.wrappedValue.hasCompleted), total: CGFloat(task.wrappedValue.subtasks.count))
                                     .progressViewStyle(.circular)
                                     .padding(.all, 1)
                             }
-                            .labelStyle(.listItem)
                         }
-                        .contextMenu {
-                            Button {
-                                dataManager.data.removeAll { element in
-                                    element.id == task.wrappedValue.id
-                                }
-                            } label: {
-                                Text("删除")
-                            }
-                        }
+                        .labelStyle(.listItem)
+                        .tag(task.wrappedValue.id)
                     }
                 }
-            }
+            }       
         }
     }
     
     @ObservedObject private var dataManager: DataManager
+    @Binding private var selection: UUID?
     
-    init(_ dataManager: DataManager) {
+    init(_ dataManager: DataManager, selection: Binding<UUID?>) {
         self.dataManager = dataManager
+        self._selection = selection
     }
     
     var body: some View {
-        List {
+        List(selection: $selection) {
             TaskSectionView(dataManager, title: "已逾期") { task in
-                return task.wrappedValue.overdue > 0
+                return task.wrappedValue.overdue > 0 && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
@@ -75,7 +73,7 @@ struct TaskListView: View {
                     .lineLimit(1)
             }
             TaskSectionView(dataManager, title: "今天") { task in
-                return task.wrappedValue.date.isTheSameDay(as: Date.now) && task.wrappedValue.overdue == 0
+                return task.wrappedValue.date.isTheSameDay(as: Date.now) && task.wrappedValue.overdue == 0 && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
@@ -85,7 +83,7 @@ struct TaskListView: View {
                     .lineLimit(1)
             }
             TaskSectionView(dataManager, title: "未来7天") { task in
-                return task.wrappedValue.date.isInTheNextDay(from: 1, to: 8)
+                return task.wrappedValue.date.isInTheNextDay(from: 1, to: 8) && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
@@ -95,7 +93,7 @@ struct TaskListView: View {
                     .lineLimit(1)
             }
             TaskSectionView(dataManager, title: "未来30天") { task in
-                return task.wrappedValue.date.isInTheNextDay(from: 8, to: 31)
+                return task.wrappedValue.date.isInTheNextDay(from: 8, to: 31) && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
@@ -105,7 +103,7 @@ struct TaskListView: View {
                     .lineLimit(1)
             }
             TaskSectionView(dataManager, title: "未来半年") { task in
-                return task.wrappedValue.date.isInTheNextDay(from: 31, to: 181)
+                return task.wrappedValue.date.isInTheNextDay(from: 31, to: 181) && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
@@ -115,11 +113,21 @@ struct TaskListView: View {
                     .lineLimit(1)
             }
             TaskSectionView(dataManager, title: "未来") { task in
-                return task.wrappedValue.date.isAfter(day: 181)
+                return task.wrappedValue.date.isAfter(day: 181) && !task.wrappedValue.isCompleted
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
                 Text(task.date.format(.all))
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            TaskSectionView(dataManager, title: "已完成") { task in
+                return task.wrappedValue.isCompleted == true
+            } sortBy: { first, second in
+                return first.wrappedValue.name <= second.wrappedValue.name
+            } subtitle: { task in
+                Text("已完成")
                     .font(.callout)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -138,13 +146,18 @@ struct TaskListView: View {
                 }
             }
         }
+        .onChange(of: selection) { [selection] newValue in
+            if newValue == nil {
+                self.selection = selection
+            }
+        }
     }
 }
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationSplitView {
-            TaskListView(DataManager())
+            TaskListView(DataManager(), selection: .constant(DataManager().data.first!.id))
         } detail: {}
     }
 }

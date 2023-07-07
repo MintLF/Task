@@ -37,7 +37,7 @@ struct Task: Identifiable, Equatable, Hashable, Codable {
                 if Date.now > subtask.date {
                     num += 1
                 }
-            }
+            }          
         }
         return num
     }

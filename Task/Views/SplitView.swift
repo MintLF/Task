@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SplitView: View {
     @ObservedObject private var dataManager: DataManager
+    @State private var selection: UUID?
     
     init(_ dataManager: DataManager) {
         self.dataManager = dataManager
@@ -9,11 +10,16 @@ struct SplitView: View {
     
     var body: some View {
         NavigationSplitView {
-            TaskListView(dataManager)
+            TaskListView(dataManager, selection: $selection)
         } detail: {
-            WelcomeView()
+            TaskDetailView($dataManager.data.first { $0.wrappedValue.id == selection })
                 .navigationTitle("待办事项")
                 .navigationSubtitle("已完成 \(dataManager.finishedSubtasks)/\(dataManager.totalSubtasks) 个子任务")
+        }
+        .onDeleteCommand {
+            dataManager.data.removeAll { element in
+                element.id == selection
+            }
         }
     }
 }

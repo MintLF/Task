@@ -37,7 +37,9 @@ struct TaskDetailView: View {
                                 .padding()
                         }
                         Button {
-                            delete()
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                delete()
+                            }
                         } label: {
                             Image(systemName: "trash")
                                 .foregroundStyle(.secondary)
@@ -57,54 +59,45 @@ struct TaskDetailView: View {
         }
     }
     
-    @Binding private var task: Task
-    private var totalSteps: Int
-    private var finishedSteps: Int
+    private var task: Binding<Task>?
     
-    init(_ task: Binding<Task>, total: Int, finished: Int) {
-        self._task = task
-        self.totalSteps = total
-        self.finishedSteps = finished
+    init(_ task: Binding<Task>?) {
+        self.task = task
+    }
+    
+    private var sortedSubtasks: [Binding<Subtask>]? {
+        return task?.subtasks.sorted { first, second in
+            return first.wrappedValue.date <= second.wrappedValue.date
+        }
     }
     
     var body: some View {
-        ScrollView(.vertical) {
-            VStack {
-                GroupBox {
-                    VStack {
-                        ForEach(0..<task.subtasks.count, id: \.self) { index in
-                            SubtaskDetailView($task.subtasks[index], count: task.subtasks.count) {
-                                task.subtasks.removeAll { other in
-                                    task.subtasks[index].id == other.id
-                                }
-                            }
-                            if index != task.subtasks.count - 1 {
-                                Divider()
-                            }
+        if task == nil {
+            WelcomeView()
+        } else {
+            List {
+                ForEach(0..<sortedSubtasks!.count, id: \.self) { index in
+                    SubtaskDetailView(sortedSubtasks![index], count: sortedSubtasks!.count) {
+                        task!.wrappedValue.subtasks.removeAll { other in
+                            sortedSubtasks![index].id == other.id
                         }
                     }
-                    .padding(.all, 5)
-                } label: {
-                    TextEditor(text: $task.name)
-                        .labelsHidden()
-                        .textFieldStyle(.plain)
-                        .font(.headline)
                 }
             }
-            .padding()
-        }
-        .background(Color(NSColor.controlBackgroundColor))
-        .navigationTitle("待办事项")
-        .navigationSubtitle("已完成 \(finishedSteps)/\(totalSteps) 个子任务")
-        .toolbar {
-            ToolbarItem {
-                Spacer(minLength: 0)
-            }
-            ToolbarItem {
-                Button {
-                    task.subtasks.append(Subtask("子任务", "这是一个子任务。"))
-                } label: {
-                    Label("添加子任务", systemImage: "plus")
+            .listStyle(InsetListStyle(alternatesRowBackgrounds: true))
+            .background(Color(NSColor.controlBackgroundColor))
+            .toolbar {
+                if task != nil {
+                    ToolbarItem {
+                        Spacer(minLength: 0)
+                    }
+                    ToolbarItem {
+                        Button {
+                            task!.wrappedValue.subtasks.append(Subtask("子任务", "这是一个子任务。"))
+                        } label: {
+                            Label("添加子任务", systemImage: "plus")
+                        }
+                    }
                 }
             }
         }
@@ -113,6 +106,6 @@ struct TaskDetailView: View {
 
 struct TaskDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        TaskDetailView(.constant(Task("示例项目", subtasks: [Subtask("子任务", "这是一个子任务。")])), total: 10, finished: 5)
+        TaskDetailView(.constant(Task("示例项目", subtasks: [Subtask("子任务", "这是一个子任务。", isCompleted: true), Subtask("子任务", "这是一个子任务。", date: Date.distantFuture), Subtask("子任务", "这是一个子任务。", date: Date.distantPast)])))
     }
 }
