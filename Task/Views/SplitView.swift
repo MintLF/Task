@@ -12,9 +12,13 @@ struct SplitView: View {
         NavigationSplitView {
             TaskListView(dataManager, selection: $selection)
         } detail: {
-            TaskDetailView($dataManager.data.first { $0.wrappedValue.id == selection })
-                .navigationTitle("待办事项")
-                .navigationSubtitle("已完成 \(dataManager.finishedSubtasks)/\(dataManager.totalSubtasks) 个子任务")
+            TaskDetailView($dataManager.data.first { $0.wrappedValue.id == selection }) {
+                dataManager.data.removeAll { task in
+                    task.id == selection
+                }
+            }
+            .navigationTitle("待办事项")
+            .navigationSubtitle("已完成 \(dataManager.finishedSubtasks)/\(dataManager.totalSubtasks) 个子任务")
         }
         .onDeleteCommand {
             dataManager.data.removeAll { element in

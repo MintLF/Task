@@ -1,57 +1,7 @@
 import SwiftUI
 
 struct TaskListView: View {
-    struct TaskSectionView<Subtitle: View>: View {
-        @ObservedObject private var dataManager: DataManager
-        private var sectionTitle: String
-        private var sort: (Binding<Task>, Binding<Task>) -> Bool
-        private var filter: (Binding<Task>) -> Bool
-        @ViewBuilder private var displaySubtitle: (Task) -> Subtitle
-        
-        init(_ dataManager: DataManager, title: String, filter: @escaping (Binding<Task>) -> Bool, sortBy: @escaping (Binding<Task>, Binding<Task>) -> Bool, @ViewBuilder subtitle: @escaping (Task) -> Subtitle) {
-            self.dataManager = dataManager
-            self.sort = sortBy
-            self.filter = filter
-            self.sectionTitle = title
-            self.displaySubtitle = subtitle
-        }
-        
-        private var list: [Binding<Task>] {
-            return $dataManager.data.filter(filter).sorted(by: sort)
-        }
-        
-        var body: some View {
-            if !list.isEmpty {
-                Section(sectionTitle) {
-                    ForEach(list, id: \.id) { task in
-                        Label {
-                            VStack(alignment: .leading) {
-                                TextField("", text: task.name)
-                                    .labelsHidden()
-                                    .textFieldStyle(.plain)
-                                    .font(.headline)
-                                    .lineLimit(1)
-                                displaySubtitle(task.wrappedValue)
-                            }
-                        } icon: {
-                            ZStack {
-                                if task.wrappedValue.isCompleted {
-                                    Image(systemName: "checkmark")
-                                        .fontWeight(.semibold)
-                                }
-                                ProgressView(value: CGFloat(task.wrappedValue.hasCompleted), total: CGFloat(task.wrappedValue.subtasks.count))
-                                    .progressViewStyle(.circular)
-                                    .padding(.all, 1)
-                            }
-                        }
-                        .labelStyle(.listItem)
-                        .tag(task.wrappedValue.id)
-                    }
-                }
-            }       
-        }
-    }
-    
+    @Setting(\.sidebarToolbarContent) private var sidebarToolbarContent
     @ObservedObject private var dataManager: DataManager
     @Binding private var selection: UUID?
     
@@ -134,21 +84,77 @@ struct TaskListView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .toolbar {
-            ToolbarItem {
-                Spacer(minLength: 0)
-            }
-            ToolbarItem {
-                Button {
-                    dataManager.data.append(Task("示例任务", subtasks: [Subtask("子任务", "这是一个子任务。")]))
-                } label: {
-                    Label("添加任务", systemImage: "plus")
-                }
-            }
-        }
         .onChange(of: selection) { [selection] newValue in
             if newValue == nil {
                 self.selection = selection
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup {
+                ForEach(sidebarToolbarContent, id: \.id) { item in
+                    if item.isShown {
+                        if item.name == "可变间距" {
+                            Spacer(minLength: 0)
+                        } else if item.name == "添加任务" {
+                            Button {
+                                dataManager.data.append(Task("示例任务", subtasks: [Subtask("子任务", "这是一个子任务。")]))
+                            } label: {
+                                Label("添加任务", systemImage: "plus")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    struct TaskSectionView<Subtitle: View>: View {
+        @ObservedObject private var dataManager: DataManager
+        private var sectionTitle: String
+        private var sort: (Binding<Task>, Binding<Task>) -> Bool
+        private var filter: (Binding<Task>) -> Bool
+        @ViewBuilder private var displaySubtitle: (Task) -> Subtitle
+        
+        init(_ dataManager: DataManager, title: String, filter: @escaping (Binding<Task>) -> Bool, sortBy: @escaping (Binding<Task>, Binding<Task>) -> Bool, @ViewBuilder subtitle: @escaping (Task) -> Subtitle) {
+            self.dataManager = dataManager
+            self.sort = sortBy
+            self.filter = filter
+            self.sectionTitle = title
+            self.displaySubtitle = subtitle
+        }
+        
+        private var list: [Binding<Task>] {
+            return $dataManager.data.filter(filter).sorted(by: sort)
+        }
+        
+        var body: some View {
+            if !list.isEmpty {
+                Section(sectionTitle) {
+                    ForEach(list, id: \.id) { task in
+                        Label {
+                            VStack(alignment: .leading) {
+                                TextField("", text: task.name)
+                                    .labelsHidden()
+                                    .textFieldStyle(.plain)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                displaySubtitle(task.wrappedValue)
+                            }
+                        } icon: {
+                            ZStack {
+                                if task.wrappedValue.isCompleted {
+                                    Image(systemName: "checkmark")
+                                        .fontWeight(.semibold)
+                                }
+                                ProgressView(value: CGFloat(task.wrappedValue.hasCompleted), total: CGFloat(task.wrappedValue.subtasks.count))
+                                    .progressViewStyle(.circular)
+                                    .padding(.all, 1)
+                            }
+                        }
+                        .labelStyle(.listItem)
+                        .tag(task.wrappedValue.id)
+                    }
+                }
             }
         }
     }

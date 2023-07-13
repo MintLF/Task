@@ -1,54 +1,6 @@
 import SwiftUI
 
 struct CalendarWidget: View {
-    struct DayWidget: View {
-        private var currentYear: Int
-        private var currentMonth: Int
-        private var day: Int
-        @Binding private var chosenDate: Date
-        @Binding private var chosenYear: Int
-        @Binding private var chosenMonth: Int
-        @Binding private var chosenDay: Int
-        @Binding private var chosenHour: Int
-        @Binding private var chosenMinute: Int
-        
-        init(_ day: Int, currentYear: Int, currentMonth: Int, chosenDate: Binding<Date>, chosenYear: Binding<Int>, chosenMonth: Binding<Int>, chosenDay: Binding<Int>, chosenHour: Binding<Int>, chosenMinute: Binding<Int>) {
-            self.currentYear = currentYear
-            self.currentMonth = currentMonth
-            self.day = day
-            self._chosenDate = chosenDate
-            self._chosenYear = chosenYear
-            self._chosenMonth = chosenMonth
-            self._chosenDay = chosenDay
-            self._chosenHour = chosenHour
-            self._chosenMinute = chosenMinute
-        }
-        
-        private var isChosen: Bool {
-            day == chosenDay && currentMonth == chosenMonth && currentYear == chosenYear
-        }
-        
-        var body: some View {
-            Button {
-                chosenDay = day
-                chosenMonth = currentMonth
-                chosenYear = currentYear
-                chosenDate = Date(year: chosenYear, month: chosenMonth, day: chosenDay, hour: chosenHour, minute: chosenMinute)
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(isChosen ? .accentColor : Color(NSColor.textColor).opacity(0.05))
-                        .frame(width: 30, height: 30)
-                    Text(day.description)
-                        .font(.title3.weight(.ultraLight))
-                        .foregroundColor(isChosen ? .white : .primary)
-                }
-            }
-            .buttonStyle(.plain)
-            .padding(.all, 2.5)
-        }
-    }
-    
     @State private var currentYear: Int
     @State private var currentMonth: Int
     @State private var weekdayOfTheFirstDayOfTheMonth: Int
@@ -226,6 +178,54 @@ struct CalendarWidget: View {
                 }
                 .padding(.vertical, 5)
             }
+        }
+    }
+    
+    struct DayWidget: View {
+        private var currentYear: Int
+        private var currentMonth: Int
+        private var day: Int
+        @Binding private var chosenDate: Date
+        @Binding private var chosenYear: Int
+        @Binding private var chosenMonth: Int
+        @Binding private var chosenDay: Int
+        @Binding private var chosenHour: Int
+        @Binding private var chosenMinute: Int
+        
+        init(_ day: Int, currentYear: Int, currentMonth: Int, chosenDate: Binding<Date>, chosenYear: Binding<Int>, chosenMonth: Binding<Int>, chosenDay: Binding<Int>, chosenHour: Binding<Int>, chosenMinute: Binding<Int>) {
+            self.currentYear = currentYear
+            self.currentMonth = currentMonth
+            self.day = day
+            self._chosenDate = chosenDate
+            self._chosenYear = chosenYear
+            self._chosenMonth = chosenMonth
+            self._chosenDay = chosenDay
+            self._chosenHour = chosenHour
+            self._chosenMinute = chosenMinute
+        }
+        
+        private var isChosen: Bool {
+            day == chosenDay && currentMonth == chosenMonth && currentYear == chosenYear
+        }
+        
+        var body: some View {
+            Button {
+                chosenDay = day
+                chosenMonth = currentMonth
+                chosenYear = currentYear
+                chosenDate = Date(year: chosenYear, month: chosenMonth, day: chosenDay, hour: chosenHour, minute: chosenMinute)
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(isChosen ? .accentColor : Color(NSColor.textColor).opacity(0.05))
+                        .frame(width: 30, height: 30)
+                    Text(day.description)
+                        .font(.title3.weight(.ultraLight))
+                        .foregroundColor(isChosen ? .white : .primary)
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.all, 2.5)
         }
     }
 }

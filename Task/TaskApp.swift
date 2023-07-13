@@ -14,5 +14,8 @@ struct TaskApp: App {
                     dataManager.save()
                 }
         }
+        Settings {
+            SettingsView()
+        }
     }
 }
