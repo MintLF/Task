@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A908FD832A5D0CA400145035 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A908FD822A5D0CA400145035 /* Assets.xcassets */; };
 		A908FD862A5D0CA400145035 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A908FD852A5D0CA400145035 /* Preview Assets.xcassets */; };
+		A931FD112A6115830002B600 /* DisplaySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A931FD102A6115830002B600 /* DisplaySettingsView.swift */; };
 		A932113C2A49C18D00F5CD4B /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A932113B2A49C18D00F5CD4B /* DateExtensions.swift */; };
 		A95159C42A584D2A009F040B /* NSTextViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95159C32A584D2A009F040B /* NSTextViewExtensions.swift */; };
 		A95159C62A58579D009F040B /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95159C52A58579D009F040B /* Settings.swift */; };
@@ -48,6 +49,7 @@
 		A908FD7C2A5D0CA400145035 /* TaskMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaskMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A908FD822A5D0CA400145035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A908FD852A5D0CA400145035 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A931FD102A6115830002B600 /* DisplaySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySettingsView.swift; sourceTree = "<group>"; };
 		A932113B2A49C18D00F5CD4B /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		A95159C32A584D2A009F040B /* NSTextViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTextViewExtensions.swift; sourceTree = "<group>"; };
 		A95159C52A58579D009F040B /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 			children = (
 				A967406C2A5C431600DA6102 /* SettingsView.swift */,
 				A967406E2A5C432B00DA6102 /* ToolbarSettingsView.swift */,
+				A931FD102A6115830002B600 /* DisplaySettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -419,6 +422,7 @@
 				A932113C2A49C18D00F5CD4B /* DateExtensions.swift in Sources */,
 				A9DE61712A0267BC002A880C /* CalendarWidget.swift in Sources */,
 				A987437529FE1D8E00E5392C /* TaskApp.swift in Sources */,
+				A931FD112A6115830002B600 /* DisplaySettingsView.swift in Sources */,
 				A987439329FE959600E5392C /* Task.swift in Sources */,
 				A96740712A5C485300DA6102 /* ArrayExtensions.swift in Sources */,
 			);
@@ -646,7 +650,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = Mint.Task;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -674,7 +678,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = Mint.Task;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

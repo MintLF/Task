@@ -123,10 +123,21 @@ extension Date {
         }
         return false
     }
+    
+    func isInNext(hour: Int) -> Int? {
+        if self <= Date(timeIntervalSince1970: Date().timeIntervalSince1970 + Double(hour.hours())) {
+            return Int((self - Date().timeIntervalSince1970).timeIntervalSince1970) / 3600
+        }
+        return nil
+    }
 }
 
 extension Int {
     func days() -> Int {
         return self * 24 * 60 * 60
+    }
+    
+    func hours() -> Int {
+        return self * 60 * 60
     }
 }

@@ -16,6 +16,10 @@ struct Task: Identifiable, Equatable, Hashable, Codable {
         return date
     }
     
+    var count: Int {
+        return subtasks.count
+    }
+    
     var hasCompleted: Int {
         var num = 0
         for subtask in subtasks {
@@ -24,6 +28,10 @@ struct Task: Identifiable, Equatable, Hashable, Codable {
             }
         }
         return num
+    }
+    
+    var stillResidue: Int {
+        return count - hasCompleted
     }
     
     var isCompleted: Bool {

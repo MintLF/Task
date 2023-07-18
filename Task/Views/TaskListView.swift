@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TaskListView: View {
     @Setting(\.sidebarToolbarContent) private var sidebarToolbarContent
+    @Setting(\.sidebarSubtitleDisplayOverdue) private var sidebarSubtitleDisplayOverdue
+    @Setting(\.sidebarSubtitleDisplayCountdown) private var sidebarSubtitleDisplayCountdown
     @ObservedObject private var dataManager: DataManager
     @Binding private var selection: UUID?
     
@@ -17,10 +19,17 @@ struct TaskListView: View {
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
-                Text("逾期\(task.overdue)个子任务")
-                    .font(.callout)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                if sidebarSubtitleDisplayOverdue {
+                    Text("逾期\(task.overdue)个子任务")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                } else {
+                    Text(task.date.format(.all))
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
             }
             TaskSectionView(dataManager, title: "今天") { task in
                 return task.wrappedValue.date.isTheSameDay(as: Date.now) && task.wrappedValue.overdue == 0 && !task.wrappedValue.isCompleted
@@ -37,10 +46,24 @@ struct TaskListView: View {
             } sortBy: { first, second in
                 return first.wrappedValue.date <= second.wrappedValue.date
             } subtitle: { task in
-                Text(task.date.format(.all))
-                    .font(.callout)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                if sidebarSubtitleDisplayCountdown {
+                    if let hour = task.date.isInNext(hour: 24) {
+                        Text("剩余\(hour)小时")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    } else {
+                        Text(task.date.format(.all))
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                } else {
+                    Text(task.date.format(.all))
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
             }
             TaskSectionView(dataManager, title: "未来30天") { task in
                 return task.wrappedValue.date.isInTheNextDay(from: 8, to: 31) && !task.wrappedValue.isCompleted
@@ -109,6 +132,7 @@ struct TaskListView: View {
     }
     
     struct TaskSectionView<Subtitle: View>: View {
+        @Setting(\.sidebarProgress) private var sidebarProgress
         @ObservedObject private var dataManager: DataManager
         private var sectionTitle: String
         private var sort: (Binding<Task>, Binding<Task>) -> Bool
@@ -145,6 +169,21 @@ struct TaskListView: View {
                                 if task.wrappedValue.isCompleted {
                                     Image(systemName: "checkmark")
                                         .fontWeight(.semibold)
+                                } else {
+                                    switch sidebarProgress {
+                                    case .residue:
+                                        Text("\(task.wrappedValue.stillResidue)")
+                                            .foregroundStyle(.secondary)
+                                    case .completed:
+                                        Text("\(task.wrappedValue.hasCompleted)")
+                                            .foregroundStyle(.secondary)
+                                    case .all:
+                                        Text("\(task.wrappedValue.hasCompleted)/\(task.wrappedValue.count)")
+                                            .font(.callout)
+                                            .foregroundStyle(.secondary)
+                                    case .none:
+                                        EmptyView()
+                                    }
                                 }
                                 ProgressView(value: CGFloat(task.wrappedValue.hasCompleted), total: CGFloat(task.wrappedValue.subtasks.count))
                                     .progressViewStyle(.circular)

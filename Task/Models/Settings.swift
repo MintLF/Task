@@ -3,6 +3,11 @@ import SwiftUI
 class TaskSettings: ObservableObject {
     @AppStorage("sidebarToolbarContent") var sidebarToolbarContent: [ToolbarContentItem] = [ToolbarContentItem("可变间距", image: "space"), ToolbarContentItem("添加任务", image: "plus")]
     @AppStorage("detailToolbarContent") var detailToolbarContent: [ToolbarContentItem] = [ToolbarContentItem("可变间距", image: "space"), ToolbarContentItem("添加子任务", image: "plus"), ToolbarContentItem("删除任务", image: "trash")]
+    @AppStorage("sidebarDisplayOverdue") var sidebarSubtitleDisplayOverdue: Bool = true
+    @AppStorage("sidebarDisplayCountdown") var sidebarSubtitleDisplayCountdown: Bool = false
+    @AppStorage("sidebarProgress") var sidebarProgress: SidebarProgress = .none
+    @AppStorage("detailTitle") var detailTitle: DetailTitle = .appTitle
+    @AppStorage("detailSubtitle") var detailSubtitle: DetailSubtitle = .allSubtasks
     static let shared = TaskSettings()
 }
 
@@ -42,4 +47,22 @@ struct ToolbarContentItem: Codable, Identifiable {
         self.name = name
         self.image = image
     }
+}
+
+enum SidebarProgress: String {
+    case residue = "residue"
+    case completed = "completed"
+    case all = "all"
+    case none = "none"
+}
+
+enum DetailTitle: String {
+    case appTitle = "appTitle"
+    case taskTitle = "taskTitle"
+}
+
+enum DetailSubtitle: String {
+    case allSubtasks = "allSubtasks"
+    case subtasksInCurrentTask = "subtasksInCurrentTask"
+    case latestSubtaskInCurrentTask = "latestSubtaskInCurrentTask"
 }
