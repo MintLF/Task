@@ -41,11 +41,9 @@ struct Task: Identifiable, Equatable, Hashable, Codable {
     var overdue: Int {
         var num = 0
         for subtask in subtasks {
-            if !subtask.isCompleted {
-                if Date.now > subtask.date {
-                    num += 1
-                }
-            }          
+            if subtask.isOverdue {
+                num += 1
+            }
         }
         return num
     }

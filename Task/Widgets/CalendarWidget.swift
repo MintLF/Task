@@ -215,16 +215,9 @@ struct CalendarWidget: View {
                 chosenYear = currentYear
                 chosenDate = Date(year: chosenYear, month: chosenMonth, day: chosenDay, hour: chosenHour, minute: chosenMinute)
             } label: {
-                ZStack {
-                    Circle()
-                        .fill(isChosen ? .accentColor : Color(NSColor.textColor).opacity(0.05))
-                        .frame(width: 30, height: 30)
-                    Text(day.description)
-                        .font(.title3.weight(.ultraLight))
-                        .foregroundColor(isChosen ? .white : .primary)
-                }
+                Text(day.description)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.date(isChosen: isChosen))
             .padding(.all, 2.5)
         }
     }

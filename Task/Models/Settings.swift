@@ -8,6 +8,7 @@ class TaskSettings: ObservableObject {
     @AppStorage("sidebarProgress") var sidebarProgress: SidebarProgress = .none
     @AppStorage("detailTitle") var detailTitle: DetailTitle = .appTitle
     @AppStorage("detailSubtitle") var detailSubtitle: DetailSubtitle = .allSubtasks
+    @AppStorage("105updated") var updated: Bool = false
     static let shared = TaskSettings()
 }
 

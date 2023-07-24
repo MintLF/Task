@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TaskDetailView: View {
     @Setting(\.detailToolbarContent) private var detailToolbarContent
+    @State private var currentEditingDate: UUID? = nil
+    @State private var sortedType: SortMode = .overdue
     private var task: Binding<Task>?
     private var delete: () -> Void
     
@@ -11,34 +13,111 @@ struct TaskDetailView: View {
     }
     
     private var sortedSubtasks: [Binding<Subtask>]? {
-        return task?.subtasks.sorted { first, second in
-            return first.wrappedValue.date <= second.wrappedValue.date
+        if sortedType == .overdue {
+            return task?.subtasks.sorted { first, second in
+                return first.wrappedValue.date <= second.wrappedValue.date
+            }
+        } else if sortedType == .name {
+            return task?.subtasks.sorted { first, second in
+                return first.wrappedValue.name <= second.wrappedValue.name
+            }
+        } else {
+            return nil
         }
     }
     
     var body: some View {
         Group {
-            if task == nil {
-                WelcomeView()
-            } else {
+            if let task = task {
                 List {
-                    ForEach(0..<sortedSubtasks!.count, id: \.self) { index in
-                        SubtaskDetailView(sortedSubtasks![index], count: sortedSubtasks!.count) {
-                            task!.wrappedValue.subtasks.removeAll { other in
-                                sortedSubtasks![index].id == other.id
+                    switch sortedType {
+                    case .default:
+                        ForEach(task.subtasks, id: \.id) { subtask in
+                            SubtaskDetailView(subtask, count: task.wrappedValue.count, currentEditingDate: $currentEditingDate) {
+                                task.wrappedValue.subtasks.removeAll { other in
+                                    subtask.id == other.id
+                                }
+                            }
+                        }
+                        .onMove { from, to in
+                            task.wrappedValue.subtasks.move(fromOffsets: from, toOffset: to)
+                        }
+                    case .overdue:
+                        Group {
+                            let overdue = sortedSubtasks!.filter { $0.wrappedValue.isOverdue }
+                            let todo = sortedSubtasks!.filter { !$0.wrappedValue.isOverdue && !$0.wrappedValue.isCompleted }
+                            let hasCompleted = sortedSubtasks!.filter { $0.wrappedValue.isCompleted }
+                            if !overdue.isEmpty {
+                                Section("已逾期") {
+                                    ForEach(0..<overdue.count, id: \.self) { index in
+                                        SubtaskDetailView(overdue[index], count: overdue.count, currentEditingDate: $currentEditingDate) {
+                                            task.wrappedValue.subtasks.removeAll { other in
+                                                overdue[index].id == other.id
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if !todo.isEmpty {
+                                Section("未完成") {
+                                    ForEach(0..<todo.count, id: \.self) { index in
+                                        SubtaskDetailView(todo[index], count: todo.count, currentEditingDate: $currentEditingDate) {
+                                            task.wrappedValue.subtasks.removeAll { other in
+                                                todo[index].id == other.id
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if !hasCompleted.isEmpty {
+                                Section("已完成") {
+                                    ForEach(0..<hasCompleted.count, id: \.self) { index in
+                                        SubtaskDetailView(hasCompleted[index], count: hasCompleted.count, currentEditingDate: $currentEditingDate) {
+                                            task.wrappedValue.subtasks.removeAll { other in
+                                                hasCompleted[index].id == other.id
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    case .name:
+                        ForEach(0..<sortedSubtasks!.count, id: \.self) { index in
+                            SubtaskDetailView(sortedSubtasks![index], count: sortedSubtasks!.count, currentEditingDate: $currentEditingDate) {
+                                task.wrappedValue.subtasks.removeAll { other in
+                                    sortedSubtasks![index].id == other.id
+                                }
                             }
                         }
                     }
                 }
                 .listStyle(InsetListStyle(alternatesRowBackgrounds: true))
+            } else {
+                WelcomeView()
             }
         }
         .toolbar {
             ToolbarItemGroup {
                 ForEach(detailToolbarContent, id: \.id) { item in
                     if item.isShown {
-                        if item.name == "可变间距" {
-                            Spacer(minLength: 0)
+                        if item.name == "排序方式" {
+                            Picker("", selection: $sortedType) {
+                                HStack {
+                                    Image(systemName: "list.bullet")
+                                    Text("默认排序")
+                                }
+                                .tag(SortMode.default)
+                                HStack {
+                                    Image(systemName: "list.bullet.indent")
+                                    Text("按完成情况排序")
+                                }
+                                .tag(SortMode.overdue)
+                                HStack {
+                                    Image(systemName: "list.number")
+                                    Text("按名称排序")
+                                }
+                                .tag(SortMode.name)
+                            }
                         } else if item.name == "添加子任务" {
                             Button {
                                 task!.wrappedValue.subtasks.append(Subtask("子任务", "这是一个子任务。"))
@@ -61,15 +140,29 @@ struct TaskDetailView: View {
     }
     
     struct SubtaskDetailView: View {
-        @State private var isEditingDate: Bool = false
         @Binding private var subtask: Subtask
+        @Binding private var currentEditingDate: UUID?
         private var count: Int
         private var delete: () -> Void
         
-        init(_ subtask: Binding<Subtask>, count: Int, delete: @escaping () -> Void) {
+        init(_ subtask: Binding<Subtask>, count: Int, currentEditingDate: Binding<UUID?>, delete: @escaping () -> Void) {
             self._subtask = subtask
             self.count = count
             self.delete = delete
+            self._currentEditingDate = currentEditingDate
+        }
+        
+        private var isEditingDate: Binding<Bool> {
+            Binding<Bool> {
+                currentEditingDate == subtask.id
+            } set: { value in
+                if value {
+                    currentEditingDate = subtask.id
+                } else {
+                    currentEditingDate = nil
+                }
+            }
+
         }
         
         var body: some View {
@@ -78,20 +171,22 @@ struct TaskDetailView: View {
                     .labelsHidden()
                 VStack(spacing: 0) {
                     HStack {
-                        TextField("", text: $subtask.name)
-                            .labelsHidden()
-                            .textFieldStyle(.plain)
-                            .font(.headline)
+                        ZStack {
+                            TextField("", text: $subtask.name)
+                                .labelsHidden()
+                                .textFieldStyle(.plain)
+                                .font(.headline)
+                        }
                         Spacer(minLength: 0)
                         Button {
-                            isEditingDate.toggle()
+                            currentEditingDate = subtask.id
                         } label: {
                             Text(subtask.date.format(.all))
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                         }
-                        .buttonStyle(.plain)
-                        .popover(isPresented: $isEditingDate) {
+                        .buttonStyle(.default)
+                        .popover(isPresented: isEditingDate) {
                             CalendarWidget($subtask.date)
                                 .padding()
                         }
@@ -103,7 +198,7 @@ struct TaskDetailView: View {
                             Image(systemName: "trash")
                                 .foregroundStyle(.secondary)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.default)
                         .disabled(count == 1)
                     }
                     TextEditor(text: $subtask.description)
@@ -116,6 +211,12 @@ struct TaskDetailView: View {
             }
             .padding(.all, 5)
         }
+    }
+    
+    enum SortMode {
+        case `default`
+        case overdue
+        case name
     }
 }
 

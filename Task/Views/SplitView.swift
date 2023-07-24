@@ -16,7 +16,7 @@ struct SplitView: View {
             return "待办事项"
         case .taskTitle:
             if let selection = selection {
-                return "\(dataManager.data.first { $0.id == selection }!.name)"
+                return "\(dataManager.data.first { $0.id == selection }?.name ?? "未选中项目")"
             } else {
                 return "未选中项目"
             }
@@ -29,14 +29,19 @@ struct SplitView: View {
             return "已完成 \(dataManager.finishedSubtasks)/\(dataManager.totalSubtasks) 个子任务"
         case .subtasksInCurrentTask:
             if let selection = selection {
-                let task = dataManager.data.first { $0.id == selection }!
+                guard let task = dataManager.data.first(where: { $0.id == selection }) else {
+                    return "欢迎使用Task"
+                }
                 return "已完成 \(task.hasCompleted)/\(task.count) 个子任务"
             } else {
                 return "欢迎使用Task"
             }
         case .latestSubtaskInCurrentTask:
             if let selection = selection {
-                return dataManager.data.first { $0.id == selection }!.date.format(.all)
+                guard let task = dataManager.data.first(where: { $0.id == selection }) else {
+                    return "欢迎使用Task"
+                }
+                return task.isCompleted ? "已完成" : task.date.format(.all)
             } else {
                 return "欢迎使用Task"
             }

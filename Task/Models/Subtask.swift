@@ -6,6 +6,14 @@ struct Subtask: Identifiable, Equatable, Hashable, Codable {
     var description: String
     var date: Date
     var isCompleted: Bool
+    var isOverdue: Bool {
+        if !isCompleted {
+            if Date.now > date {
+                return true
+            }
+        }
+        return false
+    }
     
     init(_ name: String, _ description: String, date: Date = Date(), isCompleted: Bool = false) {
         self.name = name

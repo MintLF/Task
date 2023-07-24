@@ -40,6 +40,7 @@
 		A9A785282A5D918E00E06CA9 /* LabelStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A785182A5D918E00E06CA9 /* LabelStyles.swift */; };
 		A9A785292A5D918E00E06CA9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A785192A5D918E00E06CA9 /* DataManager.swift */; };
 		A9A7852C2A5D91CE00E06CA9 /* TaskMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A7852B2A5D91CE00E06CA9 /* TaskMobileApp.swift */; };
+		A9D18B582A67899800752D67 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D18B572A67899800752D67 /* ButtonStyles.swift */; };
 		A9DE616A2A020E81002A880C /* LabelStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9DE61692A020E81002A880C /* LabelStyles.swift */; };
 		A9DE616E2A025CC4002A880C /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9DE616D2A025CC4002A880C /* TaskDetailView.swift */; };
 		A9DE61712A0267BC002A880C /* CalendarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9DE61702A0267BC002A880C /* CalendarWidget.swift */; };
@@ -82,6 +83,7 @@
 		A9A785182A5D918E00E06CA9 /* LabelStyles.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabelStyles.swift; sourceTree = "<group>"; };
 		A9A785192A5D918E00E06CA9 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		A9A7852B2A5D91CE00E06CA9 /* TaskMobileApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskMobileApp.swift; sourceTree = "<group>"; };
+		A9D18B572A67899800752D67 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		A9DE61692A020E81002A880C /* LabelStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelStyles.swift; sourceTree = "<group>"; };
 		A9DE616D2A025CC4002A880C /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		A9DE61702A0267BC002A880C /* CalendarWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarWidget.swift; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 			isa = PBXGroup;
 			children = (
 				A9DE61692A020E81002A880C /* LabelStyles.swift */,
+				A9D18B572A67899800752D67 /* ButtonStyles.swift */,
 			);
 			path = Styles;
 			sourceTree = "<group>";
@@ -421,6 +424,7 @@
 				A9A348892A4C724F00D3DE98 /* WelcomeView.swift in Sources */,
 				A932113C2A49C18D00F5CD4B /* DateExtensions.swift in Sources */,
 				A9DE61712A0267BC002A880C /* CalendarWidget.swift in Sources */,
+				A9D18B582A67899800752D67 /* ButtonStyles.swift in Sources */,
 				A987437529FE1D8E00E5392C /* TaskApp.swift in Sources */,
 				A931FD112A6115830002B600 /* DisplaySettingsView.swift in Sources */,
 				A987439329FE959600E5392C /* Task.swift in Sources */,
@@ -650,7 +654,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = Mint.Task;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -678,7 +682,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = Mint.Task;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
