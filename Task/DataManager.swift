@@ -46,6 +46,9 @@ class DataManager: ObservableObject {
         } catch {
             print("Failed to save.")
         }
+        if let userDefaults = UserDefaults(suiteName: "Mint.Task") {
+            
+        }
     }
     
     func setup() {

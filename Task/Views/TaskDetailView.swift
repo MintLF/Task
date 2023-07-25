@@ -4,6 +4,7 @@ struct TaskDetailView: View {
     @Setting(\.detailToolbarContent) private var detailToolbarContent
     @State private var currentEditingDate: UUID? = nil
     @State private var sortedType: SortMode = .overdue
+    @State private var isEditing: Bool = false
     private var task: Binding<Task>?
     private var delete: () -> Void
     
@@ -26,6 +27,76 @@ struct TaskDetailView: View {
         }
     }
     
+    private var navigationToolbar: [ToolbarContentItem] {
+        var items: [ToolbarContentItem] = []
+        for item in detailToolbarContent {
+            if item.name == "窗口标题" {
+                break
+            }
+            items.append(item)
+        }
+        return items
+    }
+    
+    private var primaryToolbar: [ToolbarContentItem] {
+        var items: [ToolbarContentItem] = []
+        var show = false
+        for item in detailToolbarContent {
+            if item.name == "窗口标题" {
+                show = true
+            }
+            if show {
+                items.append(item)
+            }
+        }
+        return items
+    }
+    
+    @ViewBuilder private func toolbarItem(_ item: ToolbarContentItem) -> some View {
+        if item.isShown {
+            if item.name == "排序方式" {
+                Picker("", selection: $sortedType) {
+                    HStack {
+                        Image(systemName: "list.bullet")
+                        Text("默认排序")
+                    }
+                    .tag(SortMode.default)
+                    HStack {
+                        Image(systemName: "list.bullet.indent")
+                        Text("按完成情况排序")
+                    }
+                    .tag(SortMode.overdue)
+                    HStack {
+                        Image(systemName: "list.number")
+                        Text("按名称排序")
+                    }
+                    .tag(SortMode.name)
+                }
+            } else if item.name == "添加子任务" {
+                Button {
+                    task!.wrappedValue.subtasks.append(Subtask("子任务", "这是一个子任务。"))
+                } label: {
+                    Label("添加子任务", systemImage: "plus")
+                }
+                .disabled(task == nil)
+            } else if item.name == "删除任务" {
+                Button {
+                    delete()
+                } label: {
+                    Label("删除任务", systemImage: "trash")
+                }
+                .disabled(task == nil)
+            } else if item.name == "编辑" {
+                Button {
+                    isEditing.toggle()
+                } label: {
+                    Label("编辑", systemImage: isEditing ? "checkmark" : "square.and.pencil")
+                }
+                .disabled(task == nil)
+            }
+        }
+    }
+    
     var body: some View {
         Group {
             if let task = task {
@@ -33,7 +104,7 @@ struct TaskDetailView: View {
                     switch sortedType {
                     case .default:
                         ForEach(task.subtasks, id: \.id) { subtask in
-                            SubtaskDetailView(subtask, count: task.wrappedValue.count, currentEditingDate: $currentEditingDate) {
+                            SubtaskDetailView(subtask, isEditing, count: task.wrappedValue.count, currentEditingDate: $currentEditingDate) {
                                 task.wrappedValue.subtasks.removeAll { other in
                                     subtask.id == other.id
                                 }
@@ -50,7 +121,7 @@ struct TaskDetailView: View {
                             if !overdue.isEmpty {
                                 Section("已逾期") {
                                     ForEach(0..<overdue.count, id: \.self) { index in
-                                        SubtaskDetailView(overdue[index], count: overdue.count, currentEditingDate: $currentEditingDate) {
+                                        SubtaskDetailView(overdue[index], isEditing, count: overdue.count, currentEditingDate: $currentEditingDate) {
                                             task.wrappedValue.subtasks.removeAll { other in
                                                 overdue[index].id == other.id
                                             }
@@ -61,7 +132,7 @@ struct TaskDetailView: View {
                             if !todo.isEmpty {
                                 Section("未完成") {
                                     ForEach(0..<todo.count, id: \.self) { index in
-                                        SubtaskDetailView(todo[index], count: todo.count, currentEditingDate: $currentEditingDate) {
+                                        SubtaskDetailView(todo[index], isEditing, count: todo.count, currentEditingDate: $currentEditingDate) {
                                             task.wrappedValue.subtasks.removeAll { other in
                                                 todo[index].id == other.id
                                             }
@@ -72,7 +143,7 @@ struct TaskDetailView: View {
                             if !hasCompleted.isEmpty {
                                 Section("已完成") {
                                     ForEach(0..<hasCompleted.count, id: \.self) { index in
-                                        SubtaskDetailView(hasCompleted[index], count: hasCompleted.count, currentEditingDate: $currentEditingDate) {
+                                        SubtaskDetailView(hasCompleted[index], isEditing, count: hasCompleted.count, currentEditingDate: $currentEditingDate) {
                                             task.wrappedValue.subtasks.removeAll { other in
                                                 hasCompleted[index].id == other.id
                                             }
@@ -83,7 +154,7 @@ struct TaskDetailView: View {
                         }
                     case .name:
                         ForEach(0..<sortedSubtasks!.count, id: \.self) { index in
-                            SubtaskDetailView(sortedSubtasks![index], count: sortedSubtasks!.count, currentEditingDate: $currentEditingDate) {
+                            SubtaskDetailView(sortedSubtasks![index], isEditing, count: sortedSubtasks!.count, currentEditingDate: $currentEditingDate) {
                                 task.wrappedValue.subtasks.removeAll { other in
                                     sortedSubtasks![index].id == other.id
                                 }
@@ -97,43 +168,15 @@ struct TaskDetailView: View {
             }
         }
         .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                ForEach(navigationToolbar, id: \.id) { item in
+                    toolbarItem(item)
+                }
+            }
             ToolbarItemGroup {
-                ForEach(detailToolbarContent, id: \.id) { item in
-                    if item.isShown {
-                        if item.name == "排序方式" {
-                            Picker("", selection: $sortedType) {
-                                HStack {
-                                    Image(systemName: "list.bullet")
-                                    Text("默认排序")
-                                }
-                                .tag(SortMode.default)
-                                HStack {
-                                    Image(systemName: "list.bullet.indent")
-                                    Text("按完成情况排序")
-                                }
-                                .tag(SortMode.overdue)
-                                HStack {
-                                    Image(systemName: "list.number")
-                                    Text("按名称排序")
-                                }
-                                .tag(SortMode.name)
-                            }
-                        } else if item.name == "添加子任务" {
-                            Button {
-                                task!.wrappedValue.subtasks.append(Subtask("子任务", "这是一个子任务。"))
-                            } label: {
-                                Label("添加子任务", systemImage: "plus")
-                            }
-                            .disabled(task == nil)
-                        } else if item.name == "删除任务" {
-                            Button {
-                                delete()
-                            } label: {
-                                Label("删除任务", systemImage: "trash")
-                            }
-                            .disabled(task == nil)
-                        }
-                    }
+                Spacer(minLength: 0)
+                ForEach(primaryToolbar, id: \.id) { item in
+                    toolbarItem(item)
                 }
             }
         }
@@ -142,14 +185,16 @@ struct TaskDetailView: View {
     struct SubtaskDetailView: View {
         @Binding private var subtask: Subtask
         @Binding private var currentEditingDate: UUID?
+        private var isEditing: Bool
         private var count: Int
         private var delete: () -> Void
         
-        init(_ subtask: Binding<Subtask>, count: Int, currentEditingDate: Binding<UUID?>, delete: @escaping () -> Void) {
+        init(_ subtask: Binding<Subtask>, _ isEditing: Bool, count: Int, currentEditingDate: Binding<UUID?>, delete: @escaping () -> Void) {
             self._subtask = subtask
             self.count = count
             self.delete = delete
             self._currentEditingDate = currentEditingDate
+            self.isEditing = isEditing
         }
         
         private var isEditingDate: Binding<Bool> {
@@ -162,51 +207,72 @@ struct TaskDetailView: View {
                     currentEditingDate = nil
                 }
             }
-
+            
         }
         
         var body: some View {
             HStack {
-                Toggle("", isOn: $subtask.isCompleted)
-                    .labelsHidden()
-                VStack(spacing: 0) {
+                if isEditing {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            delete()
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.secondary)
+                            .imageScale(.large)
+                            .padding(.horizontal, 2)
+                    }
+                    .buttonStyle(.default)
+                    .disabled(count == 1)
+                } else {
+                    Toggle("", isOn: $subtask.isCompleted)
+                        .labelsHidden()
+                        .padding(.horizontal, 4.5)
+                }
+                VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        ZStack {
+                        if isEditing {
                             TextField("", text: $subtask.name)
                                 .labelsHidden()
                                 .textFieldStyle(.plain)
                                 .font(.headline)
+                        } else {
+                            Text(subtask.name)
+                                .font(.headline)
                         }
                         Spacer(minLength: 0)
-                        Button {
-                            currentEditingDate = subtask.id
-                        } label: {
+                        if isEditing {
+                            Button {
+                                currentEditingDate = subtask.id
+                            } label: {
+                                Text(subtask.date.format(.all))
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.default)
+                            .popover(isPresented: isEditingDate) {
+                                CalendarWidget($subtask.date)
+                                    .padding()
+                            }
+                        } else {
                             Text(subtask.date.format(.all))
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                         }
-                        .buttonStyle(.default)
-                        .popover(isPresented: isEditingDate) {
-                            CalendarWidget($subtask.date)
-                                .padding()
-                        }
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                delete()
-                            }
-                        } label: {
-                            Image(systemName: "trash")
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.default)
-                        .disabled(count == 1)
                     }
-                    TextEditor(text: $subtask.description)
-                        .scrollDisabled(true)
-                        .scrollContentBackground(.hidden)
-                        .textFieldStyle(.plain)
-                        .font(.body)
-                        .padding(.leading, -5)
+                    if isEditing {
+                        TextEditor(text: $subtask.description)
+                            .scrollDisabled(true)
+                            .scrollContentBackground(.hidden)
+                            .textFieldStyle(.plain)
+                            .font(.body)
+                            .padding(.leading, -5)
+                    } else {
+                        Text(subtask.description)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .padding(.all, 5)

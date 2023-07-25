@@ -1,14 +1,23 @@
 import SwiftUI
 
 class TaskSettings: ObservableObject {
-    @AppStorage("sidebarToolbarContent") var sidebarToolbarContent: [ToolbarContentItem] = [ToolbarContentItem("可变间距", image: "space"), ToolbarContentItem("添加任务", image: "plus")]
-    @AppStorage("detailToolbarContent") var detailToolbarContent: [ToolbarContentItem] = [ToolbarContentItem("可变间距", image: "space"), ToolbarContentItem("添加子任务", image: "plus"), ToolbarContentItem("删除任务", image: "trash")]
+    @AppStorage("sidebarToolbarContent") var sidebarToolbarContent: [ToolbarContentItem] = [
+        ToolbarContentItem("可变间距", image: "space"),
+        ToolbarContentItem("添加任务", image: "plus")
+    ]
+    @AppStorage("detailToolbarContent") var detailToolbarContent: [ToolbarContentItem] = [
+        ToolbarContentItem("窗口标题", image: "text.alignleft"),
+        ToolbarContentItem("排序方式", image: "list.bullet"),
+        ToolbarContentItem("添加子任务", image: "plus"),
+        ToolbarContentItem("编辑", image: "square.and.pencil"),
+        ToolbarContentItem("删除任务", image: "trash")
+    ]
     @AppStorage("sidebarDisplayOverdue") var sidebarSubtitleDisplayOverdue: Bool = true
     @AppStorage("sidebarDisplayCountdown") var sidebarSubtitleDisplayCountdown: Bool = false
     @AppStorage("sidebarProgress") var sidebarProgress: SidebarProgress = .none
     @AppStorage("detailTitle") var detailTitle: DetailTitle = .appTitle
     @AppStorage("detailSubtitle") var detailSubtitle: DetailSubtitle = .allSubtasks
-    @AppStorage("105updated") var updated: Bool = false
+    @AppStorage("106updated") var updated: Bool = false
     static let shared = TaskSettings()
 }
 

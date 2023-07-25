@@ -17,10 +17,13 @@ struct TaskApp: App {
                 }
                 .onAppear {
                     if !updated {
-                        detailToolbarContent.removeAll {
-                            $0.name == "可变间距"
-                        }
-                        detailToolbarContent.insert(ToolbarContentItem("排序方式", image: "list.bullet"), at: 0)
+                        detailToolbarContent = [
+                            ToolbarContentItem("窗口标题", image: "text.alignleft"),
+                            ToolbarContentItem("排序方式", image: "list.bullet"),
+                            ToolbarContentItem("添加子任务", image: "plus"),
+                            ToolbarContentItem("编辑", image: "square.and.pencil"),
+                            ToolbarContentItem("删除任务", image: "trash")
+                        ]
                         updated = true
                     }
                 }
